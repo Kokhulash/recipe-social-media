@@ -1,16 +1,56 @@
 import mongoose from 'mongoose';
 
-const postSchema = new mongoose.Schema({
+const recipePostSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    text: {
+    title: {
         type: String,
+        required: true
     },
     img: {
         type: String,
+        //required: true
+    },
+    ingredients: [
+        {
+            type: String,
+            required: true
+        }
+    ],
+    categories: [
+        {
+            type: String,
+            //required: true
+        }
+    ],
+    description: {
+        type: String,
+        //required: true
+    },
+    servings: {
+        type: String,
+        //required: true
+    },
+    instructions: [
+        {
+            type: String,
+            //required: true
+        }
+    ],
+    preparationTime: {
+        type: String,
+        //required: true
+    },
+    cookingTime: {
+        type: String,
+        //required: true
+    },
+    videoLink: {
+        type: String,
+        default: null
     },
     likes: [
         {
@@ -31,10 +71,10 @@ const postSchema = new mongoose.Schema({
             }
         }
     ]
-},{
+}, {
     timestamps: true
 });
 
-const Post = mongoose.model("Post", postSchema);
+const Post = mongoose.model("Post", recipePostSchema);
 
 export default Post;

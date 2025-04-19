@@ -6,7 +6,17 @@ import Notification from "../models/notification.model.js";
 
 export const createPost = async (req, res) => {
     try {
-        const {text} = req.body;
+        const {
+            title ,
+            ingredients ,
+            categories ,
+            description,
+            servings,
+            instructions,
+            preparationTime,
+            cookingTime,
+            videoLink,
+        } = req.body;
         let {img} = req.body;
 
         const userId = req.user._id.toString();
@@ -19,11 +29,27 @@ export const createPost = async (req, res) => {
             })
         }
 
-        if (!text && !img) {
+        /*
+        if (!title && !img && !ingredients && !categories && !description && !servings && !instructions && !preparationTime) {
             return res.status(400).json({
-                success: false, message: "Please provide text or image"
+                success: false, message: "Please provide all the required details"
             })
         }
+         */
+
+        if(!title && !ingredients) {
+            return res.status(400).json({
+                success: false, message: "Please provide title and ingredients"
+            })
+        }
+
+        /*
+        if(instructions.length < 3){
+            return res.status(400).json({
+                success: false, message: "Please provide atleast 3 instructions"
+            })
+        }
+         */
 
         if (img) {
             const uploadedResponse = cloudinary.uploader.upload(img);
@@ -31,7 +57,17 @@ export const createPost = async (req, res) => {
         }
 
         const newPost = new Post({
-            user: userId, text, img,
+            user: userId,
+            title,
+            img,
+            ingredients,
+            categories,
+            description,
+            servings,
+            instructions,
+            preparationTime,
+            cookingTime,
+            videoLink: videoLink || null
         })
 
         await newPost.save();
