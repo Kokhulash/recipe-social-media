@@ -1,8 +1,11 @@
-import { FaRegComment, FaRegHeart, FaHeart, FaRegBookmark, FaBookmark, FaTrash, FaClock, FaUtensils } from "react-icons/fa";
+import {FaBookmark, FaClock, FaRegComment, FaUtensils} from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
+import { FaRegHeart } from "react-icons/fa";
+import {FaHeart, FaRegBookmark} from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner.jsx";
 
@@ -40,53 +43,35 @@ const RecipePost = ({ post }) => {
     const { mutate: likePost, isPending: isLiking } = useMutation({
         mutationFn: async () => {
             try {
-                const res = await fetch(`/api/posts/${post._id}/like`, {
+                const res = await fetch(`/api/posts/like/${post._id}`, {
                     method: "POST",
                 });
-
                 const data = await res.json();
-
                 if (!res.ok) {
                     throw new Error(data.error || "Something went wrong");
                 }
-
                 return data;
-            } catch (e) {
-                throw new Error(e);
+            } catch (error) {
+                throw new Error(error);
             }
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["posts"] });
-        }
-    });
+        onSuccess: (updatedLikes) => {
+            // this is not the best UX, bc it will refetch all posts
+            //queryClient.invalidateQueries({ queryKey: ["posts"] });
 
-    const { mutate: saveComment, isPending: isCommenting } = useMutation({
-        mutationFn: async () => {
-            try {
-                const res = await fetch(`/api/posts/${post._id}/comment`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ text: comment }),
+            // instead, update the cache directly for that post
+            queryClient.setQueryData(["posts"], (oldData) => {
+                return oldData.map((p) => {
+                    if (p._id === post._id) {
+                        return { ...p, likes: updatedLikes };
+                    }
+                    return p;
                 });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.error || "Something went wrong");
-                }
-
-                return data;
-            } catch (e) {
-                throw new Error(e);
-            }
+            });
         },
-        onSuccess: () => {
-            setComment("");
-            toast.success("Comment added successfully.");
-            queryClient.invalidateQueries({ queryKey: ["posts"] });
-        }
+        onError: (error) => {
+            toast.error(error.message);
+        },
     });
 
     const postOwner = post.user;
@@ -100,12 +85,11 @@ const RecipePost = ({ post }) => {
 
     const handlePostComment = (e) => {
         e.preventDefault();
-        if (comment.trim()) {
-            saveComment();
-        }
+
     };
 
     const handleLikePost = () => {
+        if(isLiking) return;
         likePost();
     };
 
@@ -279,63 +263,63 @@ const RecipePost = ({ post }) => {
             </div>
 
             {/* Comments Modal */}
-            <dialog id={`comments_modal_${post._id}`} className="modal">
-                <div className="modal-box">
-                    <h3 className="font-bold text-lg mb-4">Comments</h3>
-                    <div className="flex flex-col gap-3 max-h-60 overflow-auto mb-4">
-                        {post.comments.length === 0 && (
-                            <p className="text-sm text-gray-500">
-                                No comments yet. Be the first to comment!
-                            </p>
-                        )}
-                        {post.comments.map((comment, index) => (
-                            <div key={index} className="flex gap-2 items-start border-b border-gray-700 pb-3">
-                                <div className="avatar">
-                                    <div className="w-8 rounded-full">
-                                        <img
-                                            src={comment.user.profileImg || "/avatar-placeholder.png"}
-                                            alt={comment.user.fullName}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="flex items-center gap-1">
-                                        <span className="font-bold">{comment.user.fullName}</span>
-                                        <span className="text-gray-500 text-sm">
-                                            @{comment.user.username}
-                                        </span>
-                                    </div>
-                                    <div className="text-sm mt-1">{comment.text}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <form
-                        className="flex gap-2 items-center mt-4"
-                        onSubmit={handlePostComment}
-                    >
-                        <textarea
-                            className="textarea textarea-bordered w-full resize-none focus:outline-none"
-                            placeholder="Add a comment..."
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                        />
-                        <button
-                            className="btn btn-primary"
-                            disabled={isCommenting || !comment.trim()}
-                        >
-                            {isCommenting ? (
-                                <span className="loading loading-spinner"></span>
-                            ) : (
-                                "Post"
-                            )}
-                        </button>
-                    </form>
-                </div>
-                <form method="dialog" className="modal-backdrop">
-                    <button>Close</button>
-                </form>
-            </dialog>
+            {/*<dialog id={`comments_modal_${post._id}`} className="modal">*/}
+            {/*    <div className="modal-box">*/}
+            {/*        <h3 className="font-bold text-lg mb-4">Comments</h3>*/}
+            {/*        <div className="flex flex-col gap-3 max-h-60 overflow-auto mb-4">*/}
+            {/*            {post.comments.length === 0 && (*/}
+            {/*                <p className="text-sm text-gray-500">*/}
+            {/*                    No comments yet. Be the first to comment!*/}
+            {/*                </p>*/}
+            {/*            )}*/}
+            {/*            {post.comments.map((comment, index) => (*/}
+            {/*                <div key={index} className="flex gap-2 items-start border-b border-gray-700 pb-3">*/}
+            {/*                    <div className="avatar">*/}
+            {/*                        <div className="w-8 rounded-full">*/}
+            {/*                            <img*/}
+            {/*                                src={comment.user.profileImg || "/avatar-placeholder.png"}*/}
+            {/*                                alt={comment.user.fullName}*/}
+            {/*                            />*/}
+            {/*                        </div>*/}
+            {/*                    </div>*/}
+            {/*                    <div className="flex flex-col">*/}
+            {/*                        <div className="flex items-center gap-1">*/}
+            {/*                            <span className="font-bold">{comment.user.fullName}</span>*/}
+            {/*                            <span className="text-gray-500 text-sm">*/}
+            {/*                                @{comment.user.username}*/}
+            {/*                            </span>*/}
+            {/*                        </div>*/}
+            {/*                        <div className="text-sm mt-1">{comment.text}</div>*/}
+            {/*                    </div>*/}
+            {/*                </div>*/}
+            {/*            ))}*/}
+            {/*        </div>*/}
+            {/*        <form*/}
+            {/*            className="flex gap-2 items-center mt-4"*/}
+            {/*            onSubmit={handlePostComment}*/}
+            {/*        >*/}
+            {/*            <textarea*/}
+            {/*                className="textarea textarea-bordered w-full resize-none focus:outline-none"*/}
+            {/*                placeholder="Add a comment..."*/}
+            {/*                value={comment}*/}
+            {/*                onChange={(e) => setComment(e.target.value)}*/}
+            {/*            />*/}
+            {/*            <button*/}
+            {/*                className="btn btn-primary"*/}
+            {/*                disabled={isCommenting || !comment.trim()}*/}
+            {/*            >*/}
+            {/*                {isCommenting ? (*/}
+            {/*                    <span className="loading loading-spinner"></span>*/}
+            {/*                ) : (*/}
+            {/*                    "Post"*/}
+            {/*                )}*/}
+            {/*            </button>*/}
+            {/*        </form>*/}
+            {/*    </div>*/}
+            {/*    <form method="dialog" className="modal-backdrop">*/}
+            {/*        <button>Close</button>*/}
+            {/*    </form>*/}
+            {/*</dialog>*/}
         </div>
     );
 };
