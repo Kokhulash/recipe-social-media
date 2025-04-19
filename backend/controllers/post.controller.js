@@ -29,27 +29,23 @@ export const createPost = async (req, res) => {
             })
         }
 
-        /*
-        if (!title && !img && !ingredients && !categories && !description && !servings && !instructions && !preparationTime) {
-            return res.status(400).json({
-                success: false, message: "Please provide all the required details"
-            })
+        const requiredFields = { title, img, ingredients, categories, description, servings, instructions, preparationTime, cookingTime };
+
+        for (const [key, value] of Object.entries(requiredFields)) {
+            if (!value) {
+                return res.status(400).json({
+                    success: false,
+                    message: `${key} is required`
+                });
+            }
         }
-         */
+
 
         if(!title && !ingredients) {
             return res.status(400).json({
                 success: false, message: "Please provide title and ingredients"
             })
         }
-
-        /*
-        if(instructions.length < 3){
-            return res.status(400).json({
-                success: false, message: "Please provide atleast 3 instructions"
-            })
-        }
-         */
 
         if (img) {
             const uploadedResponse = cloudinary.uploader.upload(img);
