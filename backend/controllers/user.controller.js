@@ -48,7 +48,6 @@ export const followUnfollowUser = async (req, res) => {
                 $pull: {following: id}
             });
 
-            //TODO : return the id of the user in response
             res.status(200).json({
                 message: "User unfollowed successfully",
             });
@@ -70,8 +69,6 @@ export const followUnfollowUser = async (req, res) => {
             });
 
             await newNotification.save();
-
-            //TODO : return the id of the user in response
 
             return res.status(200).json({
                 message: "User followed successfully"
