@@ -40,13 +40,6 @@ export const createPost = async (req, res) => {
             }
         }
 
-
-        if(!title && !ingredients) {
-            return res.status(400).json({
-                success: false, message: "Please provide title and ingredients"
-            })
-        }
-
         if (img) {
             const uploadedResponse = cloudinary.uploader.upload(img);
             img = (await uploadedResponse).secure_url;

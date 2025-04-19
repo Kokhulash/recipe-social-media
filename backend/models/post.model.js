@@ -12,7 +12,7 @@ const recipePostSchema = new mongoose.Schema({
     },
     img: {
         type: String,
-        //required: true
+        required: true
     },
     ingredients: [
         {
@@ -23,30 +23,30 @@ const recipePostSchema = new mongoose.Schema({
     categories: [
         {
             type: String,
-            //required: true
+            required: true
         }
     ],
     description: {
         type: String,
-        //required: true
+        required: true
     },
     servings: {
         type: String,
-        //required: true
+        required: true
     },
     instructions: [
         {
             type: String,
-            //required: true
+            required: true
         }
     ],
     preparationTime: {
         type: String,
-        //required: true
+        required: true
     },
     cookingTime: {
         type: String,
-        //required: true
+        required: true
     },
     videoLink: {
         type: String,

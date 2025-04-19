@@ -1,6 +1,8 @@
 import { CiImageOn } from "react-icons/ci";
 import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const CreateRecipe = () => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -14,30 +16,87 @@ const CreateRecipe = () => {
     const [preparationTime, setPreparationTime] = useState("");
     const [cookingTime, setCookingTime] = useState("");
     const [videoLink, setVideoLink] = useState("");
-
     const imgRef = useRef(null);
-    const isPending = false;
-    const isError = false;
 
-    const data = {
-        profileImg: "/avatars/boy1.png",
-    };
+    const {data: authUser} = useQuery({queryKey: ['authUser']});
+    const queryClient = useQueryClient();
+
+    const {mutate:createPost, isPending, isError, error} = useMutation({
+        mutationFn: async ({
+            title,
+            img,
+            ingredients,
+            categories,
+            description,
+            servings,
+            instructions,
+            preparationTime,
+            cookingTime,
+            videoLink
+        }) => {
+            try {
+                const res = await fetch("/api/posts/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        title,
+                        img,
+                        ingredients,
+                        categories,
+                        description,
+                        servings,
+                        instructions,
+                        preparationTime,
+                        cookingTime,
+                        videoLink
+                    })
+                });
+
+                const data = await res.json();
+
+                if(!res.ok) {
+                    throw new Error(data.error || "Something went wrong");
+                }
+
+                return data;
+
+            } catch (e) {
+                throw new Error(e);
+            }
+        },
+        onSuccess: () => {
+            setTitle("");
+            setImg(null);
+            setIngredients("");
+            setCategories("");
+            setDescription("");
+            setServings("");
+            setInstructions("");
+            setPreparationTime("");
+            setCookingTime("");
+            setVideoLink("");
+            setIsExpanded(false);
+            toast.success("Post created successfully");
+            queryClient.invalidateQueries({queryKey: ['posts']});
+        }
+    })
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert("Recipe created successfully!");
-        // Reset form
-        setTitle("");
-        setImg(null);
-        setIngredients("");
-        setCategories("");
-        setDescription("");
-        setServings("");
-        setInstructions("");
-        setPreparationTime("");
-        setCookingTime("");
-        setVideoLink("");
-        setIsExpanded(false);
+        createPost({
+            title,
+            img,
+            ingredients,
+            categories,
+            description,
+            servings,
+            instructions,
+            preparationTime,
+            cookingTime,
+            videoLink
+        });
     };
 
     const handleImgChange = (e) => {
@@ -59,7 +118,7 @@ const CreateRecipe = () => {
             >
                 <div className='avatar'>
                     <div className='w-10 sm:w-12 rounded-full'>
-                        <img src={data.profileImg || "/avatar-placeholder.png"} />
+                        <img src={authUser.profileImg || "/avatar-placeholder.png"} />
                     </div>
                 </div>
                 <div className='flex-1'>
@@ -77,7 +136,7 @@ const CreateRecipe = () => {
         <div className='flex p-4 items-start gap-4 border-b border-gray-700'>
             <div className='avatar'>
                 <div className='w-8 rounded-full'>
-                    <img src={data.profileImg || "/avatar-placeholder.png"} />
+                    <img src={authUser.profileImg || "/avatar-placeholder.png"} />
                 </div>
             </div>
 
