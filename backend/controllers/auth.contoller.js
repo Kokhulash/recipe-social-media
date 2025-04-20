@@ -55,9 +55,10 @@ export const signup = async (req, res) => {
                 fullName: newUser.fullName,
                 userName: newUser.username,
                 email: newUser.email,
-                profileImage: newUser.profileImage,
+                profileImg: newUser.profileImg,
                 coverImg: newUser.coverImg,
                 link: newUser.link,
+                bio: newUser.bio,
                 followers: newUser.followers,
                 following: newUser.following,
             })
