@@ -14,7 +14,7 @@ import { MdEdit } from "react-icons/md";
 import {useQuery} from "@tanstack/react-query";
 import {formatMemberSinceDate} from "../../utils/date/index.js";
 import useFollow from "../../hooks/useFollow.jsx";
-import useUpdateUserProfile from "../../hooks/useUpdateuserProfile.jsx";
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile.jsx";
 
 const ProfilePage = () => {
     const [coverImg, setCoverImg] = useState(null);
