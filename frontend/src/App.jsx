@@ -7,7 +7,7 @@ import NotificationPage from "./pages/notification/NotificationPage.jsx";
 import ProfilePage from "./pages/profile/ProfilePage.jsx";
 
 import Sidebar from "./components/common/Sidebar.jsx";
-import RightPanel from "./components/common/RIghtPanel.jsx";
+import RightPanel from "./components/common/RightPanel.jsx";
 import {Toaster} from "react-hot-toast";
 import {useQuery} from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner.jsx";
