@@ -110,7 +110,6 @@ const RecipePost = ({ post }) => {
         },
     });
 
-
     const handleDeletePost = () => {
         deletePost();
     };
@@ -205,32 +204,26 @@ const RecipePost = ({ post }) => {
                 <div className="mb-4">
                     <h3 className="font-bold text-lg mb-2">Ingredients</h3>
                     <div className="flex flex-col gap-2">
-                        {post.ingredients && typeof post.ingredients === 'string' ?
-                            post.ingredients.split(',').map((ingredient, index) => (
-                                <div key={index} className="flex items-start gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
-                                    <span className="text-gray-300">{ingredient.trim()}</span>
-                                </div>
-                            )) :
-                            (Array.isArray(post.ingredients) && post.ingredients.map((ingredient, index) => (
-                                <div key={index} className="flex items-start gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
-                                    <span className="text-gray-300">{ingredient}</span>
-                                </div>
-                            )))
-                        }
+                        {(typeof post.ingredients === 'string' ? post.ingredients.split(/[\n,]+/) : post.ingredients || []).map((ingredient, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                                <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                                <span className="text-gray-300">{ingredient.trim()}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
                 {/* Instructions Section */}
                 <div className="mb-4">
                     <h3 className="font-bold text-lg mb-2">Instructions</h3>
-                    <ol className='list-decimal ml-5'>
-                        {post.instructions.map((step, index) => (
-                            <li key={index}>{step}</li>
+                    <ol className="list-decimal ml-5 flex flex-col gap-2">
+                        {(typeof post.instructions === 'string' ? post.instructions.split(/[\n,]+/) : post.instructions || []).map((step, index) => (
+                            <li key={index} className="text-gray-300">{step.trim()}</li>
                         ))}
                     </ol>
                 </div>
+
+
 
                 {/* Video Link if available */}
                 {post.videoLink && (

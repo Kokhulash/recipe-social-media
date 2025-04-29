@@ -1,98 +1,93 @@
 import { CiImageOn } from "react-icons/ci";
 import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 const CreateRecipe = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [title, setTitle] = useState("");
     const [img, setImg] = useState(null);
-    const [ingredients, setIngredients] = useState("");
     const [categories, setCategories] = useState("");
     const [description, setDescription] = useState("");
     const [servings, setServings] = useState("");
-    const [instructions, setInstructions] = useState("");
     const [preparationTime, setPreparationTime] = useState("");
     const [cookingTime, setCookingTime] = useState("");
     const [videoLink, setVideoLink] = useState("");
+    const [ingredientInput, setIngredientInput] = useState("");
+    const [ingredientList, setIngredientList] = useState([]);
+    const [instructionInput, setInstructionInput] = useState("");
+    const [instructionList, setInstructionList] = useState([]);
     const imgRef = useRef(null);
 
-    const {data: authUser} = useQuery({queryKey: ['authUser']});
+    const { data: authUser } = useQuery({ queryKey: ['authUser'] });
     const queryClient = useQueryClient();
 
-    const {mutate:createPost, isPending, isError, error} = useMutation({
+    const { mutate: createPost, isPending, isError } = useMutation({
         mutationFn: async ({
-            title,
-            img,
-            ingredients,
-            categories,
-            description,
-            servings,
-            instructions,
-            preparationTime,
-            cookingTime,
-            videoLink
-        }) => {
-            try {
-                const res = await fetch("/api/posts/create", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        title,
-                        img,
-                        ingredients,
-                        categories,
-                        description,
-                        servings,
-                        instructions,
-                        preparationTime,
-                        cookingTime,
-                        videoLink
-                    })
-                });
+                               title,
+                               img,
+                               ingredients,
+                               categories,
+                               description,
+                               servings,
+                               instructions,
+                               preparationTime,
+                               cookingTime,
+                               videoLink
+                           }) => {
+            const res = await fetch("/api/posts/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    title,
+                    img,
+                    ingredients,
+                    categories,
+                    description,
+                    servings,
+                    instructions,
+                    preparationTime,
+                    cookingTime,
+                    videoLink
+                })
+            });
 
-                const data = await res.json();
-
-                if(!res.ok) {
-                    throw new Error(data.error || "Something went wrong");
-                }
-
-                return data;
-
-            } catch (e) {
-                throw new Error(e);
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Something went wrong");
             }
+            return data;
         },
         onSuccess: () => {
             setTitle("");
             setImg(null);
-            setIngredients("");
+            setIngredientList([]);
             setCategories("");
             setDescription("");
             setServings("");
-            setInstructions("");
+            setInstructionList([]);
             setPreparationTime("");
             setCookingTime("");
             setVideoLink("");
             setIsExpanded(false);
             toast.success("Post created successfully");
-            queryClient.invalidateQueries({queryKey: ['posts']});
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
         }
-    })
+    });
 
     const handleSubmit = (e) => {
         e.preventDefault();
         createPost({
             title,
             img,
-            ingredients,
+            ingredients: ingredientList,   // ✅ corrected
             categories,
             description,
             servings,
-            instructions,
+            instructions: instructionList, // ✅ corrected
             preparationTime,
             cookingTime,
             videoLink
@@ -118,7 +113,7 @@ const CreateRecipe = () => {
             >
                 <div className='avatar'>
                     <div className='w-10 sm:w-12 rounded-full'>
-                        <img src={authUser.profileImg || "/avatar-placeholder.png"} />
+                        <img src={authUser?.profileImg || "/avatar-placeholder.png"} />
                     </div>
                 </div>
                 <div className='flex-1'>
@@ -136,7 +131,7 @@ const CreateRecipe = () => {
         <div className='flex p-4 items-start gap-4 border-b border-gray-700'>
             <div className='avatar'>
                 <div className='w-8 rounded-full'>
-                    <img src={authUser.profileImg || "/avatar-placeholder.png"} />
+                    <img src={authUser?.profileImg || "/avatar-placeholder.png"} />
                 </div>
             </div>
 
@@ -158,22 +153,83 @@ const CreateRecipe = () => {
                     required
                 />
 
-                <textarea
-                    className='textarea textarea-bordered text-md w-full'
-                    placeholder='Ingredients (comma-separated)'
-                    value={ingredients}
-                    onChange={(e) => setIngredients(e.target.value)}
-                    required
-                />
+                {/* Ingredients */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            className="input input-bordered w-full text-md"
+                            placeholder="Add Ingredient"
+                            value={ingredientInput}
+                            onChange={(e) => setIngredientInput(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => {
+                                if (ingredientInput.trim() !== "") {
+                                    setIngredientList([...ingredientList, ingredientInput.trim()]);
+                                    setIngredientInput("");
+                                }
+                            }}
+                        >
+                            Add
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {ingredientList.map((item, index) => (
+                            <div key={index} className="badge badge-outline">
+                                {item}
+                                <IoCloseSharp
+                                    className="ml-1 cursor-pointer"
+                                    onClick={() => {
+                                        setIngredientList(ingredientList.filter((_, i) => i !== index));
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-                <textarea
-                    className='textarea textarea-bordered text-md w-full'
-                    placeholder='Instructions (step-by-step, comma-separated)'
-                    value={instructions}
-                    onChange={(e) => setInstructions(e.target.value)}
-                    required
-                />
+                {/* Instructions */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            className="input input-bordered w-full text-md"
+                            placeholder="Add Instruction"
+                            value={instructionInput}
+                            onChange={(e) => setInstructionInput(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => {
+                                if (instructionInput.trim() !== "") {
+                                    setInstructionList([...instructionList, instructionInput.trim()]);
+                                    setInstructionInput("");
+                                }
+                            }}
+                        >
+                            Add
+                        </button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        {instructionList.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                                <span className="font-medium">{index + 1}.</span> {item}
+                                <IoCloseSharp
+                                    className="ml-1 cursor-pointer"
+                                    onClick={() => {
+                                        setInstructionList(instructionList.filter((_, i) => i !== index));
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
+                {/* Other Inputs */}
                 <div className='flex gap-2'>
                     <input
                         type='text'
@@ -220,6 +276,7 @@ const CreateRecipe = () => {
                     onChange={(e) => setVideoLink(e.target.value)}
                 />
 
+                {/* Image Upload */}
                 {img && (
                     <div className='relative w-72 mx-auto'>
                         <IoCloseSharp
@@ -233,6 +290,7 @@ const CreateRecipe = () => {
                     </div>
                 )}
 
+                {/* Buttons */}
                 <div className='flex justify-between border-t py-2 border-t-gray-700'>
                     <div className='flex gap-2 items-center'>
                         <CiImageOn
